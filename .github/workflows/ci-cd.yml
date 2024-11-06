@@ -1,0 +1,81 @@
+name: Build, Test, Analyze, Format, and Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.ACTIONS_PAT }}  # Ensure the primary code checkout uses the PAT
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.3'
+        channel: 'stable'
+
+    - name: Cache Flutter dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.pub-cache
+          .dart_tool
+        key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-
+
+    - name: Install dependencies
+      run: |
+        flutter pub get
+
+    - name: Run Flutter Analyze
+      run: |
+        flutter analyze  # Linting check for code quality
+
+    - name: Run Dart Format Check
+      run: |
+        dart format --set-exit-if-changed .  # Check if code is formatted correctly
+
+    - name: Run Flutter Tests
+      run: |
+        flutter test --fail-fast  # Run the unit tests and stop on first failure
+
+    - name: Build Flutter Web
+      run: flutter build web --release  # Build optimized web version
+
+    - name: Checkout geekyved.github.io repository
+      uses: actions/checkout@v3
+      with:
+        repository: geekyved/geekyved.github.io  # Target repository
+        token: ${{ secrets.ACTIONS_PAT }}  # Use the PAT here
+        path: geekyved.github.io
+
+    - name: Copy Web Build to GitHub Pages Repo
+      run: |
+        rm -rf geekyved.github.io/*  # Remove existing files in the target repo
+        cp -r ./build/web/* geekyved.github.io/  # Copy the new build
+
+    - name: Commit and Push changes
+      run: |
+        cd geekyved.github.io
+        git config --local user.name "GitHub Actions"
+        git config --local user.email "actions@github.com"
+        git add .
+        git diff --cached --quiet || git commit -m "Deploy update from commit ${{ github.sha }}"
+        git push origin main  # Push to the main branch of geekyved.github.io repository
+
+    - name: Clean Flutter build
+      run: flutter clean  # Clean Flutter build cache
+
+    - name: Success Message
+      run: echo "Successfully deployed to geekyved.github.io!"
