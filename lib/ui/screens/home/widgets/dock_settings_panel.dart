@@ -1,8 +1,8 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:gapopa_flutter_vedant/features/dock/data/models/dock_item.dart';
-import 'package:gapopa_flutter_vedant/features/dock/presentation/widgets/dock_container.dart';
+import 'package:gapopa_flutter_vedant/data/models/dock_item.dart';
+import 'package:gapopa_flutter_vedant/ui/screens/home/dock_controller.dart';
 import 'package:get/get.dart';
 
 class DockSettingsPanel extends StatelessWidget {

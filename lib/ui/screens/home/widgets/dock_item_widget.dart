@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:gapopa_flutter_vedant/features/dock/data/models/dock_item.dart';
-import 'package:gapopa_flutter_vedant/features/dock/presentation/widgets/dock_magnification_effect.dart';
+import 'package:gapopa_flutter_vedant/data/models/dock_item.dart';
+import 'package:gapopa_flutter_vedant/ui/screens/home/widgets/dock_magnification_effect.dart';
 
 class DockItemWidget extends StatelessWidget {
   final DockItem item;
@@ -8,7 +8,7 @@ class DockItemWidget extends StatelessWidget {
   final VoidCallback? onPressed;
   final Function(DragStartDetails) onDragStart;
   final Function(DragUpdateDetails) onDragUpdate;
-  final Function(DraggableDetails) onDragEnd; // Updated type here
+  final Function(DraggableDetails) onDragEnd;
 
   const DockItemWidget({
     super.key,

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:gapopa_flutter_vedant/config/router/app_router.dart';
-import 'package:gapopa_flutter_vedant/core/theme/app_theme.dart';
+import 'package:gapopa_flutter_vedant/bindings/app_bindings.dart';
+import 'package:gapopa_flutter_vedant/config/router/app_pages.dart';
+import 'package:gapopa_flutter_vedant/config/router/app_routes.dart';
+import 'package:gapopa_flutter_vedant/shared/themes/app_theme.dart';
+import 'package:gapopa_flutter_vedant/shared/controllers/theme_controller.dart';
 import 'package:get/get.dart';
 
 class MyApp extends StatelessWidget {
@@ -11,11 +14,12 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'macOS Dock',
       debugShowCheckedModeBanner: false,
+      initialBinding: AppBindings(),
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.system,
-      initialRoute: AppRouter.home,
-      getPages: AppRouter.routes,
+      themeMode: Get.find<ThemeController>().themeMode.value,
+      initialRoute: AppRoutes.home,
+      getPages: AppPages.routes,
     );
   }
 }
