@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gapopa_flutter_vedant/data/models/all_dock_items.dart';
+import 'package:gapopa_flutter_vedant/shared/constants/all_dock_items.dart';
 import 'package:gapopa_flutter_vedant/ui/screens/home/dock_controller.dart';
 import 'package:get/get.dart';
 

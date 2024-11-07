@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:gapopa_flutter_vedant/ui/screens/app_window/app_window_screen.dart';
 import 'package:gapopa_flutter_vedant/data/models/dock_item.dart';
@@ -10,11 +9,13 @@ class DockController extends GetxController {
   final RxList<DockItem> items = <DockItem>[].obs;
   final RxInt draggedIndex = (-1).obs;
   final Rx<Offset> dragOffset = const Offset(0, 0).obs;
+  final RxList<Widget> windows = <Widget>[].obs;
 
   @override
   void onInit() {
     super.onInit();
     _loadInitialItems();
+    _loadInitialWindows();
   }
 
   void _loadInitialItems() {
@@ -100,6 +101,20 @@ class DockController extends GetxController {
     ]);
   }
 
+  void _loadInitialWindows() {
+    windows.addAll([
+      AppWindowScreen(
+        app: 'Welcome',
+        initContent: true,
+        onClose: () {
+          windows.removeWhere(
+              (window) => window is AppWindowScreen && window.app == 'Welcome');
+          log('Closed window: Welcome');
+        },
+      ),
+    ]);
+  }
+
   void updateDragPosition(int index, Offset offset) {
     draggedIndex.value = index;
     dragOffset.value = offset;
@@ -120,12 +135,17 @@ class DockController extends GetxController {
     }
     // Implement transition animation for opening a new screen
 
-    Get.to(
-        () => AppWindowScreen(
-              app: appName,
-            ),
-        transition: Transition.fadeIn,
-        duration: Duration(milliseconds: 300));
+    // Implement transition animation for opening a new screen
+    final newWindow = AppWindowScreen(
+      app: appName,
+      onClose: () {
+        // Remove the window from the windows list when the close button is pressed
+        windows.removeWhere(
+            (window) => window is AppWindowScreen && window.app == appName);
+        log('Closed window: $appName');
+      },
+    );
+    windows.add(newWindow);
 
     log('Launching app: $appName');
   }

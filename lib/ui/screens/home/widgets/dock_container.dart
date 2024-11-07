@@ -15,10 +15,10 @@ class _DockContainerState extends State<DockContainer> {
   final DockController controller = Get.find();
   int? hoveredIndex;
   final double baseItemHeight = 40;
-  final double maxItemHeight = 63; // Reduce maximum height to prevent overflow
+  final double maxItemHeight = 66; // Reduce maximum height to prevent overflow
   final double baseTranslationY = 0.0;
   final double maxTranslationY =
-      -10; // Adjust translation to reduce dock movement
+      -13; // Adjust translation to reduce dock movement
   final double verticalItemsPadding = 10;
 
   double getScaledSize(int index) {
@@ -73,7 +73,7 @@ class _DockContainerState extends State<DockContainer> {
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.2),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: List.generate(
@@ -88,12 +88,12 @@ class _DockContainerState extends State<DockContainer> {
                     hoveredIndex = null;
                   }),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 180),
                     height: getScaledSize(index),
                     width: getScaledSize(index),
                     transform: Matrix4.identity()
                       ..translate(0.0, getTranslationY(index)),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
                     child: OverflowBox(
                       alignment: Alignment.center,
                       maxHeight:

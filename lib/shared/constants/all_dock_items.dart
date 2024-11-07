@@ -145,3 +145,71 @@ final allDockItems = [
     onTap: () => dockController.launchApp('Time Machine'),
   ),
 ];
+
+Map<String, DockItem> dockItemsMap = {
+  'Finder': DockItem(
+    id: 'item1',
+    iconPath: ImageConstants.finderIcon,
+    label: 'Finder',
+  ),
+  'Task Manager': DockItem(
+    id: 'item2',
+    iconPath: ImageConstants.taskManagerIcon,
+    label: 'Task Manager',
+  ),
+  'Terminal': DockItem(
+    id: 'item3',
+    iconPath: ImageConstants.terminalIcon,
+    label: 'Terminal',
+  ),
+  'Email': DockItem(
+    id: 'item4',
+    iconPath: ImageConstants.emailIcon,
+    label: 'Email',
+  ),
+  'Messaging': DockItem(
+    id: 'item5',
+    iconPath: ImageConstants.messagesIcon,
+    label: 'Messaging',
+  ),
+  'Calendar': DockItem(
+    id: 'item6',
+    iconPath: ImageConstants.calendarIcon,
+    label: 'Calendar',
+  ),
+  'Notes': DockItem(
+    id: 'item7',
+    iconPath: ImageConstants.notesIcon,
+    label: 'Notes',
+  ),
+  'Music': DockItem(
+    id: 'item8',
+    iconPath: ImageConstants.musicIcon,
+    label: 'Music',
+  ),
+  'Reminder': DockItem(
+    id: 'item9',
+    iconPath: ImageConstants.remindersIcon,
+    label: 'Reminder',
+  ),
+  'Safari': DockItem(
+    id: 'item10',
+    iconPath: ImageConstants.safariIcon,
+    label: 'Safari',
+  ),
+  'Folder': DockItem(
+    id: 'item11',
+    iconPath: ImageConstants.folderIcon,
+    label: 'Folder',
+  ),
+  'FaceTime': DockItem(
+    id: 'item12',
+    iconPath: ImageConstants.facetimeIcon,
+    label: 'FaceTime',
+  ),
+  'Settings': DockItem(
+    id: 'item13',
+    iconPath: ImageConstants.settingsIcon,
+    label: 'Settings',
+  ),
+};

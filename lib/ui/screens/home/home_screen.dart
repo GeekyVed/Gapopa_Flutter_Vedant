@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gapopa_flutter_vedant/shared/constants/app_colors.dart';
 import 'package:gapopa_flutter_vedant/shared/controllers/theme_controller.dart';
+import 'package:gapopa_flutter_vedant/ui/screens/home/dock_controller.dart';
 import 'package:gapopa_flutter_vedant/ui/screens/home/widgets/custom_floating_action_button.dart';
 import 'package:gapopa_flutter_vedant/ui/screens/home/widgets/dock_container.dart';
 import 'package:get/get.dart';
@@ -11,6 +12,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
+    final dockController = Get.find<DockController>();
     return Scaffold(
       floatingActionButton: CustomFloatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
@@ -43,6 +45,15 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
+          Obx(() {
+            return Positioned.fill(
+              child: Stack(
+                children: dockController.windows.map((window) {
+                  return window; // Render each window from the controller's windows list
+                }).toList(),
+              ),
+            );
+          }),
         ],
       ),
     );
