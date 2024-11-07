@@ -1,12 +1,15 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:gapopa_flutter_vedant/shared/constants/all_dock_items.dart';
 import 'package:gapopa_flutter_vedant/ui/screens/app_window/app_window_screen.dart';
 import 'package:gapopa_flutter_vedant/data/models/dock_item.dart';
-import 'package:gapopa_flutter_vedant/shared/constants/app_images.dart';
+import 'package:gapopa_flutter_vedant/ui/screens/settings/settings_window.dart';
 import 'package:get/get.dart';
 
 class DockController extends GetxController {
-  final RxList<DockItem> items = <DockItem>[].obs;
+  final RxList<DockItem> items = <DockItem>[].obs; // Items in the dock
+  final RxList<DockItem> notAddedItems =
+      <DockItem>[].obs; // Items not added to the dock
   final RxInt draggedIndex = (-1).obs;
   final Rx<Offset> dragOffset = const Offset(0, 0).obs;
   final RxList<Widget> windows = <Widget>[].obs;
@@ -16,89 +19,19 @@ class DockController extends GetxController {
     super.onInit();
     _loadInitialItems();
     _loadInitialWindows();
+    _initializeNotAddedItems();
   }
 
+  // Load initial items into the dock
   void _loadInitialItems() {
-    items.addAll([
-      DockItem(
-        id: 'item1',
-        iconPath: ImageConstants.finderIcon,
-        label: 'Finder',
-        onTap: () => launchApp('Finder'),
-      ),
-      DockItem(
-        id: 'item2',
-        iconPath: ImageConstants.taskManagerIcon,
-        label: 'Task Manager',
-        onTap: () => launchApp('Task Manager'),
-      ),
-      DockItem(
-        id: 'item3',
-        iconPath: ImageConstants.terminalIcon,
-        label: 'Terminal',
-        onTap: () => launchApp('Terminal'),
-      ),
-      DockItem(
-        id: 'item4',
-        iconPath: ImageConstants.emailIcon,
-        label: 'Email',
-        onTap: () => launchApp('Email'),
-      ),
-      DockItem(
-        id: 'item5',
-        iconPath: ImageConstants.messagesIcon,
-        label: 'Messaging',
-        onTap: () => launchApp('Messaging'),
-      ),
-      DockItem(
-        id: 'item6',
-        iconPath: ImageConstants.calendarIcon,
-        label: 'Calendar',
-        onTap: () => launchApp('Calendar'),
-      ),
-      DockItem(
-        id: 'item7',
-        iconPath: ImageConstants.notesIcon,
-        label: 'Notes',
-        onTap: () => launchApp('Notes'),
-      ),
-      DockItem(
-        id: 'item8',
-        iconPath: ImageConstants.musicIcon,
-        label: 'Music',
-        onTap: () => launchApp('Music'),
-      ),
-      DockItem(
-        id: 'item9',
-        iconPath: ImageConstants.remindersIcon,
-        label: 'Reminder',
-        onTap: () => launchApp('Reminder'),
-      ),
-      DockItem(
-        id: 'item10',
-        iconPath: ImageConstants.safariIcon,
-        label: 'Safari',
-        onTap: () => launchApp('Safari'),
-      ),
-      DockItem(
-        id: 'item11',
-        iconPath: ImageConstants.folderIcon,
-        label: 'Folder',
-        onTap: () => launchApp('Folder'),
-      ),
-      DockItem(
-        id: 'item12',
-        iconPath: ImageConstants.facetimeIcon,
-        label: 'FaceTime',
-        onTap: () => launchApp('FaceTime'),
-      ),
-      DockItem(
-        id: 'item13',
-        iconPath: ImageConstants.settingsIcon,
-        label: 'Settings',
-        onTap: () => launchApp('Settings'),
-      ),
-    ]);
+    items.addAll(initialItems);
+  }
+
+  void _initializeNotAddedItems() {
+    // Assuming allDockItems is the list containing all the items available
+    notAddedItems.addAll(
+      allDockItems.where((item) => !initialItems.contains(item)).toList(),
+    );
   }
 
   void _loadInitialWindows() {
@@ -130,12 +63,23 @@ class DockController extends GetxController {
 
   void launchApp(String appName) {
     if (appName == 'Settings') {
-      Get.toNamed('/settings');
+      // Open Settings as a window-like screen (similar to AppWindowScreen)
+      final newSettingsWindow = SettingsWindow(
+        app: 'Settings',
+        onClose: () {
+          // Remove the window from the windows list when the close button is pressed
+          windows.removeWhere(
+            (window) => window is SettingsWindow && window.app == 'Settings',
+          );
+          log('Closed window: Settings');
+        },
+      );
+      windows.add(newSettingsWindow);
+
       return;
     }
     // Implement transition animation for opening a new screen
 
-    // Implement transition animation for opening a new screen
     final newWindow = AppWindowScreen(
       app: appName,
       onClose: () {
@@ -148,5 +92,21 @@ class DockController extends GetxController {
     windows.add(newWindow);
 
     log('Launching app: $appName');
+  }
+
+  // Function to add an item to the dock
+  void addItemToDock(DockItem item) {
+    if (!items.contains(item)) {
+      items.add(item);
+      notAddedItems.remove(item); // Remove from not added items
+    }
+  }
+
+  // Function to remove an item from the dock
+  void removeItemFromDock(DockItem item) {
+    if (items.contains(item)) {
+      items.remove(item);
+      notAddedItems.add(item); // Add back to not added items
+    }
   }
 }

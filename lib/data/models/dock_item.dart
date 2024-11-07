@@ -12,4 +12,14 @@ class DockItem {
     required this.label,
     this.onTap,
   });
+
+  // Override the equality operator to compare items by their 'id' or other fields
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is DockItem && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 }
