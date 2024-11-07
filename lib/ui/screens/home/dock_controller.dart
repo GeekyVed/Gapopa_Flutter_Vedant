@@ -23,79 +23,79 @@ class DockController extends GetxController {
         id: 'item1',
         iconPath: ImageConstants.finderIcon,
         label: 'Finder',
-        onTap: () => _launchApp('Finder'),
+        onTap: () => launchApp('Finder'),
       ),
       DockItem(
         id: 'item2',
         iconPath: ImageConstants.taskManagerIcon,
         label: 'Task Manager',
-        onTap: () => _launchApp('Task Manager'),
+        onTap: () => launchApp('Task Manager'),
       ),
       DockItem(
         id: 'item3',
         iconPath: ImageConstants.terminalIcon,
         label: 'Terminal',
-        onTap: () => _launchApp('Terminal'),
+        onTap: () => launchApp('Terminal'),
       ),
       DockItem(
         id: 'item4',
         iconPath: ImageConstants.emailIcon,
         label: 'Email',
-        onTap: () => _launchApp('Email'),
+        onTap: () => launchApp('Email'),
       ),
       DockItem(
         id: 'item5',
         iconPath: ImageConstants.messagesIcon,
         label: 'Messaging',
-        onTap: () => _launchApp('Messaging'),
+        onTap: () => launchApp('Messaging'),
       ),
       DockItem(
         id: 'item6',
         iconPath: ImageConstants.calendarIcon,
         label: 'Calendar',
-        onTap: () => _launchApp('Calendar'),
+        onTap: () => launchApp('Calendar'),
       ),
       DockItem(
         id: 'item7',
         iconPath: ImageConstants.notesIcon,
         label: 'Notes',
-        onTap: () => _launchApp('Notes'),
+        onTap: () => launchApp('Notes'),
       ),
       DockItem(
         id: 'item8',
         iconPath: ImageConstants.musicIcon,
         label: 'Music',
-        onTap: () => _launchApp('Music'),
+        onTap: () => launchApp('Music'),
       ),
       DockItem(
         id: 'item9',
         iconPath: ImageConstants.remindersIcon,
         label: 'Reminder',
-        onTap: () => _launchApp('Reminder'),
+        onTap: () => launchApp('Reminder'),
       ),
       DockItem(
         id: 'item10',
         iconPath: ImageConstants.safariIcon,
         label: 'Safari',
-        onTap: () => _launchApp('Safari'),
+        onTap: () => launchApp('Safari'),
       ),
       DockItem(
         id: 'item11',
         iconPath: ImageConstants.folderIcon,
         label: 'Folder',
-        onTap: () => _launchApp('Folder'),
+        onTap: () => launchApp('Folder'),
       ),
       DockItem(
         id: 'item12',
         iconPath: ImageConstants.facetimeIcon,
         label: 'FaceTime',
-        onTap: () => _launchApp('FaceTime'),
+        onTap: () => launchApp('FaceTime'),
       ),
       DockItem(
         id: 'item13',
         iconPath: ImageConstants.settingsIcon,
         label: 'Settings',
-        onTap: () => _launchApp('Settings'),
+        onTap: () => launchApp('Settings'),
       ),
     ]);
   }
@@ -113,7 +113,7 @@ class DockController extends GetxController {
     items.insert(newIndex, item);
   }
 
-  void _launchApp(String appName) {
+  void launchApp(String appName) {
     if (appName == 'Settings') {
       Get.toNamed('/settings');
       return;

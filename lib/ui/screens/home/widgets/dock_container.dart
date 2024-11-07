@@ -1,8 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:gapopa_flutter_vedant/ui/screens/home/dock_controller.dart';
 import 'package:gapopa_flutter_vedant/ui/screens/home/widgets/dock_item_widget.dart';
-import 'package:get/get.dart';
 
 class DockContainer extends StatefulWidget {
   const DockContainer({super.key});
@@ -11,18 +11,56 @@ class DockContainer extends StatefulWidget {
   State<DockContainer> createState() => _DockContainerState();
 }
 
-class _DockContainerState extends State<DockContainer>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  final DockController controller = Get.put(DockController());
+class _DockContainerState extends State<DockContainer> {
+  final DockController controller = Get.find();
+  int? hoveredIndex;
+  final double baseItemHeight = 40;
+  final double maxItemHeight = 63; // Reduce maximum height to prevent overflow
+  final double baseTranslationY = 0.0;
+  final double maxTranslationY =
+      -10; // Adjust translation to reduce dock movement
+  final double verticalItemsPadding = 10;
 
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
+  double getScaledSize(int index) {
+    return getPropertyValue(
+      index: index,
+      baseValue: baseItemHeight,
+      maxValue: maxItemHeight, // Set a new capped max height
+      nonHoveredMaxValue: 40,
     );
+  }
+
+  double getTranslationY(int index) {
+    return getPropertyValue(
+      index: index,
+      baseValue: baseTranslationY,
+      maxValue: maxTranslationY, // Use smaller translation for stability
+      nonHoveredMaxValue:
+          -8, // Use a smaller value here too for smoother transitions
+    );
+  }
+
+  double getPropertyValue({
+    required int index,
+    required double baseValue,
+    required double maxValue,
+    required double nonHoveredMaxValue,
+  }) {
+    if (hoveredIndex == null) {
+      return baseValue;
+    }
+
+    final difference = (hoveredIndex! - index).abs();
+    final itemsAffected = controller.items.length;
+
+    if (difference == 0) {
+      return maxValue;
+    } else if (difference <= itemsAffected) {
+      final ratio = (itemsAffected - difference) / itemsAffected;
+      return lerpDouble(baseValue, nonHoveredMaxValue, ratio)!;
+    } else {
+      return baseValue;
+    }
   }
 
   @override
@@ -36,38 +74,60 @@ class _DockContainerState extends State<DockContainer>
             color: Colors.white.withOpacity(0.2),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Obx(() => Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (int i = 0; i < controller.items.length; i++)
-                    DockItemWidget(
-                      key: ValueKey(controller.items[i].id),
-                      item: controller.items[i],
-                      index: i,
-                      onDragStart: (details) {
-                        controller.updateDragPosition(
-                            i, details.globalPosition);
-                        _animationController.forward();
-                      },
-                      onDragUpdate: (details) {
-                        controller.dragOffset.value = details.globalPosition;
-                      },
-                      onDragEnd: (details) {
-                        final newIndex = _calculateNewIndex(details.offset);
-                        controller.reorderItem(i, newIndex);
-                        _animationController.reverse();
-                      },
-                      onPressed: controller.items[i].onTap,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(
+              controller.items.length,
+              (index) {
+                return MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  onEnter: (event) => setState(() {
+                    hoveredIndex = index;
+                  }),
+                  onExit: (event) => setState(() {
+                    hoveredIndex = null;
+                  }),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    height: getScaledSize(index),
+                    width: getScaledSize(index),
+                    transform: Matrix4.identity()
+                      ..translate(0.0, getTranslationY(index)),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    child: OverflowBox(
+                      alignment: Alignment.center,
+                      maxHeight:
+                          maxItemHeight, // Allow the box to expand without cutting off
+                      maxWidth: maxItemHeight,
+                      child: DockItemWidget(
+                        key: ValueKey(controller.items[index].id),
+                        item: controller.items[index],
+                        index: index,
+                        onPressed: controller.items[index].onTap,
+                        onDragStart: (details) {
+                          controller.updateDragPosition(
+                              index, details.globalPosition);
+                        },
+                        onDragUpdate: (details) {
+                          controller.dragOffset.value = details.globalPosition;
+                        },
+                        onDragEnd: (details) {
+                          final newIndex = _calculateNewIndex(details.offset);
+                          controller.reorderItem(index, newIndex);
+                        },
+                      ),
                     ),
-                ],
-              )),
+                  ),
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
   }
 
   int _calculateNewIndex(Offset offset) {
-    // Implementation of index calculation based on drag position
     final RenderBox box = context.findRenderObject() as RenderBox;
     final localOffset = box.globalToLocal(offset);
     return (localOffset.dx ~/ 60).clamp(0, controller.items.length - 1);
