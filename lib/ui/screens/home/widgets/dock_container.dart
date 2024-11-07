@@ -71,7 +71,7 @@ class _DockContainerState extends State<DockContainer> {
                   onEnter: (_) => setState(() => hoveredIndex = index),
                   onExit: (_) => setState(() => hoveredIndex = null),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
+                    duration: const Duration(milliseconds: 270),
                     height: baseItemHeight * getIconScale(index),
                     width: baseItemHeight * getIconScale(index),
                     margin: const EdgeInsets.symmetric(horizontal: 2),
