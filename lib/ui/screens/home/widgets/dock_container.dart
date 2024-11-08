@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gapopa_flutter_vedant/ui/screens/home/dock_controller.dart';
 import 'package:gapopa_flutter_vedant/ui/screens/home/widgets/dock_item_widget.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class DockContainer extends StatefulWidget {
   const DockContainer({super.key});
@@ -18,7 +19,6 @@ class _DockContainerState extends State<DockContainer>
   int? draggedIndex;
   final double baseItemHeight = 48;
 
-  // Animation controller for shrink effect
   late AnimationController _shrinkAnimationController;
   int? shrinkingIndex;
 
@@ -86,64 +86,88 @@ class _DockContainerState extends State<DockContainer>
     _shrinkAnimationController.forward();
   }
 
+  Widget _buildLabel(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(21),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.roboto(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 960),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(draggedIndex != null ? 0.1 : 0.2),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          child: Obx(
-            () => Row(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(
-                controller.items.length,
-                (index) => MouseRegion(
-                  onEnter: (_) => setState(() => hoveredIndex = index),
-                  onExit: (_) => setState(() => hoveredIndex = null),
-                  child: Draggable<int>(
-                    data: index,
-                    // Adjust the feedback alignment to match cursor
-                    feedbackOffset: Offset.zero,
-                    onDragStarted: () => setState(() {
-                      draggedIndex = index;
-                    }),
-                    onDragUpdate: (details) {
-                      setState(() {
-                        dragPositionY = details.localPosition.dy;
-                      });
-                    },
-                    onDragEnd: (details) {
-                      setState(() {
-                        if (dragPositionY < 75) {
-                          _startShrinkAnimation(draggedIndex!);
-                        }
-                        isDragging = false;
-                        draggedIndex = null;
-                        hoveredIndex = null;
-                        dragPositionY = 0.0;
-                      });
-                    },
-                    feedback: Material(
-                      color: Colors.transparent,
-                      child: _buildDockIcon(index, isDragging: true),
-                    ),
-                    childWhenDragging: const SizedBox.shrink(),
-                    child: DragTarget<int>(
-                      onAcceptWithDetails: (details) {
-                        controller.reorderItem(details.data, index);
-                      },
-                      onWillAcceptWithDetails: (details) {
-                        return details.data != index;
-                      },
-                      builder: (context, candidateData, rejectedData) {
-                        return _buildDockIcon(index);
-                      },
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Dock container
+        ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 960),
+              decoration: BoxDecoration(
+                color:
+                    Colors.white.withOpacity(draggedIndex != null ? 0.1 : 0.2),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              child: Obx(
+                () => Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(
+                    controller.items.length,
+                    (index) => MouseRegion(
+                      onEnter: (_) => setState(() => hoveredIndex = index),
+                      onExit: (_) => setState(() => hoveredIndex = null),
+                      child: Draggable<int>(
+                        data: index,
+                        feedbackOffset: Offset.zero,
+                        onDragStarted: () => setState(() {
+                          draggedIndex = index;
+                        }),
+                        onDragUpdate: (details) {
+                          setState(() {
+                            dragPositionY = details.localPosition.dy;
+                          });
+                        },
+                        onDragEnd: (details) {
+                          setState(() {
+                            if (dragPositionY < 75) {
+                              _startShrinkAnimation(draggedIndex!);
+                            }
+                            isDragging = false;
+                            draggedIndex = null;
+                            hoveredIndex = null;
+                            dragPositionY = 0.0;
+                          });
+                        },
+                        feedback: Material(
+                          color: Colors.transparent,
+                          child: _buildDockIcon(index, isDragging: true),
+                        ),
+                        childWhenDragging: const SizedBox.shrink(),
+                        child: DragTarget<int>(
+                          onAcceptWithDetails: (details) {
+                            controller.reorderItem(details.data, index);
+                          },
+                          onWillAcceptWithDetails: (details) {
+                            return details.data != index;
+                          },
+                          builder: (context, candidateData, rejectedData) {
+                            return _buildDockIcon(index);
+                          },
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -151,8 +175,33 @@ class _DockContainerState extends State<DockContainer>
             ),
           ),
         ),
-      ),
+        // Labels
+        if (hoveredIndex != null && !isDragging)
+          Positioned(
+            left: _calculateLabelPosition(hoveredIndex!),
+            bottom: baseItemHeight * getIconScale(hoveredIndex!) +
+                10, // Position above the dock
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: hoveredIndex != null ? 1.0 : 0.0,
+              child: _buildLabel(controller.items[hoveredIndex!].label),
+            ),
+          ),
+      ],
     );
+  }
+
+  double _calculateLabelPosition(int index) {
+    // Calculate the position based on the index
+    double position = 10.0; // Initial padding
+    for (int i = 0; i < index; i++) {
+      position += baseItemHeight * getIconScale(i) + 4.0; // Add margin
+    }
+    // Center the label over the icon
+    position +=
+        (baseItemHeight * getIconScale(index) - baseItemHeight * normalScale) /
+            2;
+    return position;
   }
 
   Widget _buildDockIcon(int index, {bool isDragging = false}) {
