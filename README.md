@@ -117,7 +117,7 @@ You can also use the pre-configured script `./tools/run_checks.bat` to automatic
 ## 🎥 Demo Video
 
 You can view the demo video showcasing the features and animations implemented in this project here:  
-[MacOS-Style Dock Demo Video](https://github.com/user-attachments/assets/8a24ae82-25fc-4e0d-8fb0-853d3ec79904)
+[![MacOS-Style Dock Demo Video]](https://github.com/user-attachments/assets/8a24ae82-25fc-4e0d-8fb0-853d3ec79904)
 
 ## 🙋‍♂️ Author
 
