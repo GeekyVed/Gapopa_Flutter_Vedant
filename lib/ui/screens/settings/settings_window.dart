@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:gapopa_flutter_vedant/ui/screens/settings/tabs/dock_settings_section.dart';
 import 'package:get/get.dart';
 import 'package:gapopa_flutter_vedant/shared/constants/app_colors.dart';
 import 'package:gapopa_flutter_vedant/shared/controllers/theme_controller.dart';
-import 'package:gapopa_flutter_vedant/ui/screens/settings/widgets/about_section.dart';
-import 'package:gapopa_flutter_vedant/ui/screens/settings/widgets/dock_icon_settings.dart';
-import 'package:gapopa_flutter_vedant/ui/screens/settings/widgets/theme_settings.dart';
+import 'package:gapopa_flutter_vedant/ui/screens/settings/tabs/about_section.dart';
+import 'package:gapopa_flutter_vedant/ui/screens/settings/tabs/dock_icon_settings.dart';
+import 'package:gapopa_flutter_vedant/ui/screens/settings/tabs/theme_settings.dart';
 
 class SettingsWindow extends StatefulWidget {
   final String app;
@@ -124,9 +125,11 @@ class SettingsWindowState extends State<SettingsWindow> {
                             children: [
                               _menuItem(
                                   'Dock Icons', 0, 'assets/icons/icons.png'),
+                              _menuItem('Dock Settings', 1,
+                                  'assets/icons/settings.png'), // New Menu Item for Dock Settings
                               _menuItem(
-                                  'Default Theme', 1, 'assets/icons/theme.png'),
-                              _menuItem('About', 2, 'assets/icons/dev.png'),
+                                  'Default Theme', 2, 'assets/icons/theme.png'),
+                              _menuItem('About', 3, 'assets/icons/dev.png'),
                             ],
                           ),
                         ),
@@ -162,8 +165,10 @@ class SettingsWindowState extends State<SettingsWindow> {
                                 case 0:
                                   return DockIconsSettings();
                                 case 1:
-                                  return ThemeSettings();
+                                  return DockSettingsSection();
                                 case 2:
+                                  return ThemeSettings();
+                                case 3:
                                   return const AboutSection();
                                 default:
                                   return const SizedBox.shrink();
@@ -250,8 +255,10 @@ class SettingsWindowState extends State<SettingsWindow> {
       case 0:
         return 'Dock Icons Settings';
       case 1:
-        return 'Theme Settings';
+        return 'Dock Settings';
       case 2:
+        return 'Theme Settings';
+      case 3:
         return 'About';
       default:
         return '';

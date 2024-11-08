@@ -45,18 +45,15 @@ class _DockContainerState extends State<DockContainer>
     super.dispose();
   }
 
-  // Scaling factors for hover, neighbor, second neighbor, and normal icons
   final double hoverScale = 1.75;
   final double neighborScale = 1.43;
   final double secondNeighborScale = 1.28;
   final double normalScale = 1.0;
 
-  // Drag state variables
   bool isDragging = false;
   double dragPositionY = 0.0;
 
   double getIconScale(int index) {
-    // If the item is currently shrinking, apply the shrink animation
     if (shrinkingIndex == index) {
       return normalScale * (1 - _shrinkAnimationController.value);
     }
@@ -111,6 +108,8 @@ class _DockContainerState extends State<DockContainer>
                   onExit: (_) => setState(() => hoveredIndex = null),
                   child: Draggable<int>(
                     data: index,
+                    // Adjust the feedback alignment to match cursor
+                    feedbackOffset: Offset.zero,
                     onDragStarted: () => setState(() {
                       draggedIndex = index;
                     }),
@@ -122,7 +121,6 @@ class _DockContainerState extends State<DockContainer>
                     onDragEnd: (details) {
                       setState(() {
                         if (dragPositionY < 75) {
-                          // Start shrink animation instead of immediate removal
                           _startShrinkAnimation(draggedIndex!);
                         }
                         isDragging = false;
@@ -133,10 +131,7 @@ class _DockContainerState extends State<DockContainer>
                     },
                     feedback: Material(
                       color: Colors.transparent,
-                      child: Transform.translate(
-                        offset: const Offset(0, -40),
-                        child: _buildDockIcon(index, isDragging: true),
-                      ),
+                      child: _buildDockIcon(index, isDragging: true),
                     ),
                     childWhenDragging: const SizedBox.shrink(),
                     child: DragTarget<int>(
