@@ -19,7 +19,7 @@ class AppWindowController extends GetxController {
       AppWindowScreen(
         app: 'Welcome',
         initContent: true,
-        initialPosition: Offset(100, 100),
+        initialPosition: Offset(50, 50),
         onClose: () {
           windows.removeWhere(
               (window) => window is AppWindowScreen && window.app == 'Welcome');
@@ -35,6 +35,28 @@ class AppWindowController extends GetxController {
     } else {
       _launchAppWindow(appName);
     }
+  }
+
+  bool hasWelcomeWindow() {
+    return windows
+        .any((window) => window is AppWindowScreen && window.app == 'Welcome');
+  }
+
+  void removeWelcomeWindow() {
+    windows.removeWhere(
+        (window) => window is AppWindowScreen && window.app == 'Welcome');
+    log('Removed Welcome window');
+  }
+
+  void launchInitWindow(String appName) {
+    final newWindow = AppWindowScreen(
+      app: appName,
+      initialPosition: _updateWindowPosition(),
+      onClose: () => _closeWindow(appName),
+      initContent: true,
+    );
+    windows.add(newWindow);
+    log('Launching app: $appName');
   }
 
   void _launchSettingsWindow() {

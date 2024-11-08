@@ -4,6 +4,7 @@ import 'package:gapopa_flutter_vedant/shared/controllers/theme_controller.dart';
 import 'package:gapopa_flutter_vedant/ui/screens/app_window/app_window_controller.dart';
 import 'package:gapopa_flutter_vedant/ui/screens/home/widgets/custom_floating_action_button.dart';
 import 'package:gapopa_flutter_vedant/ui/screens/home/widgets/dock_container.dart';
+import 'package:gapopa_flutter_vedant/ui/screens/home/widgets/info_floating_action_button.dart';
 import 'package:get/get.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -14,7 +15,15 @@ class HomeScreen extends StatelessWidget {
     final themeController = Get.find<ThemeController>();
     final appWindowController = Get.find<AppWindowController>();
     return Scaffold(
-      floatingActionButton: CustomFloatingActionButton(),
+      floatingActionButton: Column(
+        children: [
+          CustomFloatingActionButton(),
+          SizedBox(
+            height: 10,
+          ),
+          InfoFloatingActionButton(),
+        ],
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       body: Stack(
         children: [
