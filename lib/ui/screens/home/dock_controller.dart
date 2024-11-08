@@ -28,7 +28,6 @@ class DockController extends GetxController {
   }
 
   void _initializeNotAddedItems() {
-    // Assuming allDockItems is the list containing all the items available
     notAddedItems.addAll(
       allDockItems.where((item) => !initialItems.contains(item)).toList(),
     );
@@ -63,11 +62,9 @@ class DockController extends GetxController {
 
   void launchApp(String appName) {
     if (appName == 'Settings') {
-      // Open Settings as a window-like screen (similar to AppWindowScreen)
       final newSettingsWindow = SettingsWindow(
         app: 'Settings',
         onClose: () {
-          // Remove the window from the windows list when the close button is pressed
           windows.removeWhere(
             (window) => window is SettingsWindow && window.app == 'Settings',
           );
@@ -75,26 +72,20 @@ class DockController extends GetxController {
         },
       );
       windows.add(newSettingsWindow);
-
       return;
     }
-    // Implement transition animation for opening a new screen
-
     final newWindow = AppWindowScreen(
       app: appName,
       onClose: () {
-        // Remove the window from the windows list when the close button is pressed
         windows.removeWhere(
             (window) => window is AppWindowScreen && window.app == appName);
         log('Closed window: $appName');
       },
     );
     windows.add(newWindow);
-
     log('Launching app: $appName');
   }
 
-  // Function to add an item to the dock
   void addItemToDock(DockItem item) {
     if (!items.contains(item)) {
       items.add(item);
@@ -102,7 +93,6 @@ class DockController extends GetxController {
     }
   }
 
-  // Function to remove an item from the dock
   void removeItemFromDock(DockItem item) {
     if (items.contains(item)) {
       items.remove(item);

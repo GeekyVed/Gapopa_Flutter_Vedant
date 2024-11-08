@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:gapopa_flutter_vedant/ui/screens/home/dock_controller.dart';
 import 'package:gapopa_flutter_vedant/ui/screens/home/widgets/dock_item_widget.dart';
@@ -15,37 +14,36 @@ class DockContainer extends StatefulWidget {
 class _DockContainerState extends State<DockContainer> {
   final DockController controller = Get.find();
   int? hoveredIndex;
-  Offset? mousePosition;
-
+  int? draggedIndex;
   final double baseItemHeight = 48;
-  final double verticalItemsPadding = 10;
 
-  void _onHover(PointerHoverEvent event) {
-    setState(() {
-      mousePosition = event.localPosition;
-    });
-  }
+  // Scaling factors for hover, neighbor, second neighbor, and normal icons
+  final double hoverScale = 1.75; // Hovered icon will be 2x larger
+  final double neighborScale = 1.43; // Immediate neighbors will be 1.6x larger
+  final double secondNeighborScale =
+      1.28; // Second neighbors will be 1.2x larger
+  final double normalScale = 1.0; // Normal size for other icons
+  final double dockShrinkScale = 1.0; // Scale for dock during drag
+
+  double dragPositionY = 0.0;
 
   double getIconScale(int index) {
-    if (hoveredIndex == null) return 1.0;
+    if (draggedIndex != null) {
+      return dockShrinkScale;
+    } else if (hoveredIndex == null) {
+      return normalScale;
+    }
 
     final distance = (index - hoveredIndex!).abs();
 
-    // Scaling configuration for different neighbors
-    const double maxScale = 1.75; // Largest scale for hovered icon
-    const double neighborScale = 1.43; // Scale for direct neighbors
-    const double secondNeighborScale = 1.28; // Scale for second neighbors
-    const double scaleDecay = 1.0; // Normal scale for other icons
-
-    // Apply scale based on the distance from the hovered icon
     if (distance == 0) {
-      return maxScale; // Hovered icon
+      return hoverScale; // Scaled icon when hovered
     } else if (distance == 1) {
-      return neighborScale; // Immediate neighbors
+      return neighborScale; // Scaled icons that are immediate neighbors
     } else if (distance == 2) {
-      return secondNeighborScale; // Second neighbors
+      return secondNeighborScale; // Scaled icons that are second neighbors
     } else {
-      return scaleDecay; // Icons further away
+      return normalScale; // Default scale for others
     }
   }
 
@@ -55,41 +53,57 @@ class _DockContainerState extends State<DockContainer> {
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 960),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.2),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          child: MouseRegion(
-            onHover: _onHover,
-            onExit: (_) => setState(() => hoveredIndex = null),
-            child: Row(
+          child: Obx(
+            () => Row(
               mainAxisSize: MainAxisSize.min,
               children: List.generate(
                 controller.items.length,
                 (index) => MouseRegion(
                   onEnter: (_) => setState(() => hoveredIndex = index),
                   onExit: (_) => setState(() => hoveredIndex = null),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 270),
-                    height: baseItemHeight * getIconScale(index),
-                    width: baseItemHeight * getIconScale(index),
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    child: DockItemWidget(
-                      key: ValueKey(controller.items[index].id),
-                      item: controller.items[index],
-                      index: index,
-                      onPressed: controller.items[index].onTap,
-                      onDragStart: (details) {
-                        controller.updateDragPosition(
-                            index, details.globalPosition);
+                  child: Draggable<int>(
+                    data: index,
+                    onDragStarted: () => setState(() {
+                      draggedIndex = index;
+                    }),
+                    onDragUpdate: (details) {
+                      setState(() {
+                        dragPositionY = details.localPosition.dy;
+                      });
+                    },
+                    onDragEnd: (details) {
+                      setState(() {
+                        if (dragPositionY < 75) {
+                          controller.removeItemFromDock(
+                              controller.items[draggedIndex!]);
+                        }
+                        draggedIndex = null;
+                        dragPositionY = 0.0;
+                      });
+                    },
+                    feedback: Material(
+                      color: Colors.transparent,
+                      child: Transform.translate(
+                        offset: Offset(0, -40),
+                        child: _buildDockIcon(index, isDragging: true),
+                      ),
+                    ),
+                    childWhenDragging: SizedBox.shrink(),
+                    child: DragTarget<int>(
+                      onAcceptWithDetails: (details) {
+                        controller.reorderItem(details.data, index);
                       },
-                      onDragUpdate: (details) {
-                        controller.dragOffset.value = details.globalPosition;
+                      onWillAcceptWithDetails: (details) {
+                        return details.data != index;
                       },
-                      onDragEnd: (details) {
-                        final newIndex = _calculateNewIndex(details.offset);
-                        controller.reorderItem(index, newIndex);
+                      builder: (context, candidateData, rejectedData) {
+                        return _buildDockIcon(index);
                       },
                     ),
                   ),
@@ -102,9 +116,18 @@ class _DockContainerState extends State<DockContainer> {
     );
   }
 
-  int _calculateNewIndex(Offset offset) {
-    final RenderBox box = context.findRenderObject() as RenderBox;
-    final localOffset = box.globalToLocal(offset);
-    return (localOffset.dx ~/ 60).clamp(0, controller.items.length - 1);
+  Widget _buildDockIcon(int index, {bool isDragging = false}) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 252),
+      height: baseItemHeight * getIconScale(index),
+      width: baseItemHeight * getIconScale(index),
+      margin: const EdgeInsets.symmetric(horizontal: 2),
+      child: DockItemWidget(
+        key: ValueKey(controller.items[index].id),
+        item: controller.items[index],
+        index: index,
+        onPressed: controller.items[index].onTap,
+      ),
+    );
   }
 }

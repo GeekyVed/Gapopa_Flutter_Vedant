@@ -36,6 +36,15 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
+          Positioned(
+            top: MediaQuery.of(context).size.height / 2 - 150,
+            left: MediaQuery.of(context).size.width / 2 - 125,
+            child: Image.asset(
+              'assets/apple_logo.png',
+              width: 250,
+              height: 250,
+            ),
+          ),
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
