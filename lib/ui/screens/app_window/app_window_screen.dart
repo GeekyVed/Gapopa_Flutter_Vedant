@@ -6,21 +6,31 @@ class AppWindowScreen extends StatefulWidget {
   final String app;
   final VoidCallback onClose;
   final bool initContent;
+  final Offset initialPosition;
 
-  const AppWindowScreen(
-      {super.key,
-      required this.app,
-      required this.onClose,
-      this.initContent = false});
+  const AppWindowScreen({
+    super.key,
+    required this.app,
+    required this.onClose,
+    required this.initialPosition,
+    this.initContent = false,
+  });
 
   @override
   AppWindowScreenState createState() => AppWindowScreenState();
 }
 
 class AppWindowScreenState extends State<AppWindowScreen> {
-  Offset _position = Offset(100, 100); // Initial position of the window
+  late Offset _position; // Initial position of the window
   Offset _dragStartPosition = Offset.zero; // Where the drag starts
   Offset _dragOffset = Offset.zero; // The offset of the drag
+
+  @override
+  void initState() {
+    super.initState();
+    _position =
+        widget.initialPosition; // Set the initial position from the widget
+  }
 
   // Update position when dragging
   void _onPanStart(DragStartDetails details) {
