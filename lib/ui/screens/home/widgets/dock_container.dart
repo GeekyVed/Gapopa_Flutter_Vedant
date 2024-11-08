@@ -11,40 +11,82 @@ class DockContainer extends StatefulWidget {
   State<DockContainer> createState() => _DockContainerState();
 }
 
-class _DockContainerState extends State<DockContainer> {
+class _DockContainerState extends State<DockContainer>
+    with SingleTickerProviderStateMixin {
   final DockController controller = Get.find();
   int? hoveredIndex;
   int? draggedIndex;
   final double baseItemHeight = 48;
 
-  // Scaling factors for hover, neighbor, second neighbor, and normal icons
-  final double hoverScale = 1.75; // Hovered icon will be 2x larger
-  final double neighborScale = 1.43; // Immediate neighbors will be 1.6x larger
-  final double secondNeighborScale =
-      1.28; // Second neighbors will be 1.2x larger
-  final double normalScale = 1.0; // Normal size for other icons
-  final double dockShrinkScale = 1.0; // Scale for dock during drag
+  // Animation controller for shrink effect
+  late AnimationController _shrinkAnimationController;
+  int? shrinkingIndex;
 
+  @override
+  void initState() {
+    super.initState();
+    _shrinkAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    _shrinkAnimationController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        controller.removeItemFromDock(controller.items[shrinkingIndex!]);
+        shrinkingIndex = null;
+        _shrinkAnimationController.reset();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _shrinkAnimationController.dispose();
+    super.dispose();
+  }
+
+  // Scaling factors for hover, neighbor, second neighbor, and normal icons
+  final double hoverScale = 1.75;
+  final double neighborScale = 1.43;
+  final double secondNeighborScale = 1.28;
+  final double normalScale = 1.0;
+
+  // Drag state variables
+  bool isDragging = false;
   double dragPositionY = 0.0;
 
   double getIconScale(int index) {
-    if (draggedIndex != null) {
-      return dockShrinkScale;
-    } else if (hoveredIndex == null) {
+    // If the item is currently shrinking, apply the shrink animation
+    if (shrinkingIndex == index) {
+      return normalScale * (1 - _shrinkAnimationController.value);
+    }
+
+    if (isDragging && index == draggedIndex) {
+      return normalScale;
+    }
+    if (!isDragging && hoveredIndex == null) {
       return normalScale;
     }
 
-    final distance = (index - hoveredIndex!).abs();
+    final distance =
+        (index - (isDragging ? draggedIndex! : hoveredIndex!)).abs();
 
     if (distance == 0) {
-      return hoverScale; // Scaled icon when hovered
+      return hoverScale;
     } else if (distance == 1) {
-      return neighborScale; // Scaled icons that are immediate neighbors
+      return neighborScale;
     } else if (distance == 2) {
-      return secondNeighborScale; // Scaled icons that are second neighbors
+      return secondNeighborScale;
     } else {
-      return normalScale; // Default scale for others
+      return normalScale;
     }
+  }
+
+  void _startShrinkAnimation(int index) {
+    setState(() {
+      shrinkingIndex = index;
+    });
+    _shrinkAnimationController.forward();
   }
 
   @override
@@ -56,7 +98,7 @@ class _DockContainerState extends State<DockContainer> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 960),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withOpacity(draggedIndex != null ? 0.1 : 0.2),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           child: Obx(
@@ -80,21 +122,23 @@ class _DockContainerState extends State<DockContainer> {
                     onDragEnd: (details) {
                       setState(() {
                         if (dragPositionY < 75) {
-                          controller.removeItemFromDock(
-                              controller.items[draggedIndex!]);
+                          // Start shrink animation instead of immediate removal
+                          _startShrinkAnimation(draggedIndex!);
                         }
+                        isDragging = false;
                         draggedIndex = null;
+                        hoveredIndex = null;
                         dragPositionY = 0.0;
                       });
                     },
                     feedback: Material(
                       color: Colors.transparent,
                       child: Transform.translate(
-                        offset: Offset(0, -40),
+                        offset: const Offset(0, -40),
                         child: _buildDockIcon(index, isDragging: true),
                       ),
                     ),
-                    childWhenDragging: SizedBox.shrink(),
+                    childWhenDragging: const SizedBox.shrink(),
                     child: DragTarget<int>(
                       onAcceptWithDetails: (details) {
                         controller.reorderItem(details.data, index);
@@ -117,17 +161,27 @@ class _DockContainerState extends State<DockContainer> {
   }
 
   Widget _buildDockIcon(int index, {bool isDragging = false}) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 252),
-      height: baseItemHeight * getIconScale(index),
-      width: baseItemHeight * getIconScale(index),
-      margin: const EdgeInsets.symmetric(horizontal: 2),
-      child: DockItemWidget(
-        key: ValueKey(controller.items[index].id),
-        item: controller.items[index],
-        index: index,
-        onPressed: controller.items[index].onTap,
-      ),
+    return AnimatedBuilder(
+      animation: _shrinkAnimationController,
+      builder: (context, child) {
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 252),
+          height: baseItemHeight * getIconScale(index),
+          width: baseItemHeight * getIconScale(index),
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          child: Opacity(
+            opacity: shrinkingIndex == index
+                ? 1 - _shrinkAnimationController.value
+                : 1.0,
+            child: DockItemWidget(
+              key: ValueKey(controller.items[index].id),
+              item: controller.items[index],
+              index: index,
+              onPressed: controller.items[index].onTap,
+            ),
+          ),
+        );
+      },
     );
   }
 }
